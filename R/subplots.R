@@ -359,8 +359,8 @@ get_domains <- function(nplots = 1, nrows = 1, margins = 0.01,
   if (length(margins) == 1) margins <- rep(margins, 4)
   if (length(margins) != 4) stop("margins must be length 1 or 4", call. = FALSE)
   ncols <- ceiling(nplots / nrows)
-  widths <- widths %||% rep(1 / ncols, ncols)
-  heights <- heights %||% rep(1 / nrows, nrows)
+  widths <- widths %||% rep((1 - (margins[1] + margins[2]) * (ncols-1)) / ncols, ncols)
+  heights <- heights %||% rep((1 - (margins[3] + margins[4]) * (nrows-1)) / nrows, nrows)
   if (length(widths) != ncols) {
     stop("The length of the widths argument must be equal ",
          "to the number of columns", call. = FALSE)
@@ -376,30 +376,51 @@ get_domains <- function(nplots = 1, nrows = 1, margins = 0.01,
     stop("The sum of the widths and heights arguments must be less than 1")
   }
   
-  widths <- cumsum(c(0, widths))
-  heights <- cumsum(c(0, heights))
+  #widths <- cumsum(c(0, widths))
+  #heights <- cumsum(c(0, heights))
   # 'center' these values if there is still room left 
-  widths <- widths + (1 - max(widths)) / 2
-  heights <- heights + (1 - max(heights)) / 2
+  #widths <- widths + (1 - max(widths)) / 2
+  #heights <- heights + (1 - max(heights)) / 2
   
   xs <- vector("list", ncols)
   for (i in seq_len(ncols)) {
-    xs[[i]] <- c(
-      xstart = widths[i] + if (i == 1) 0 else margins[1],
-      xend = widths[i + 1] - if (i == ncols) 0 else margins[2]
-    )
+    if (i == 1) {
+      xs[[i]] <- c(
+        xstart = 0,
+        xend = widths[i]
+      )
+    } else if (i <= length(widths)) {
+      lastend <- xs[[i-1]]["xend"]
+      names(lastend) <- NULL
+      xs[[i]] <- c(
+        xstart = lastend + margins[1] + margins[2],
+        xend = lastend + margins[1] + margins[2] + widths[i]
+      )
+    }
   }
+  
   xz <- rep_len(xs, nplots)
   
   ys <- vector("list", nrows)
-  for (i in seq_len(nplots)) {
-    j <- ceiling(i / ncols)
-    ys[[i]] <- c(
-      ystart = 1 - (heights[j]) - if (j == 1) 0 else margins[3],
-      yend = 1 - (heights[j + 1]) + if (j == nrows) 0 else margins[4]
-    )
+  for(i in seq_len(nrows)) {
+    if (i == 1) {
+      ys[[i]] <- c(
+        ystart = 1,
+        yend = 1-heights[i]
+      )
+    } else if (i <= length(heights)) {
+      lastend <- ys[[i-1]]["yend"]
+      names(lastend) <- NULL
+      ys[[i]] <- c(
+        ystart = lastend - margins[3] + margins[4],
+        yend = lastend - margins[3] + margins[4] - heights[i]
+      )
+    }
   }
-  list2df(Map(c, xz, ys))
+  xs <- do.call(rbind, xs)
+  ys <- do.call(rbind, ys)
+  
+  as.data.frame(cbind(xs[rep(1:nrow(xs), ncols), ], ys[rep(1:nrow(ys), nrows), ]))
 }
 
 list2df <- function(x, nms) {

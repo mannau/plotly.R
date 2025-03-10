@@ -557,3 +557,8 @@ test_that("May specify legendgroup with through a vector of values", {
   
 })
 
+test_that("Subplot Get Domains Sizes", {
+  dom <- plotly:::get_domains(nplots = 9, nrows = 3, margins = 0.1)
+  expect_equal(rep(0.2, 9), dom$xend - dom$xstart)
+  expect_equal(rep(0.2, 9), dom$ystart - dom$yend)
+})
