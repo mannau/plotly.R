@@ -420,7 +420,7 @@ get_domains <- function(nplots = 1, nrows = 1, margins = 0.01,
   xs <- do.call(rbind, xs)
   ys <- do.call(rbind, ys)
   
-  as.data.frame(cbind(xs[rep(1:nrow(xs), ncols), ], ys[rep(1:nrow(ys), nrows), ]))
+  as.data.frame(cbind(xs[rep(1:nrow(xs), ncols), ], ys[rep(1:nrow(ys), each = nrows), ]))
 }
 
 list2df <- function(x, nms) {
