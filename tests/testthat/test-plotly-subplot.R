@@ -562,4 +562,12 @@ test_that("Subplot Get Domains Sizes", {
   expect_equal(dom$xend - dom$xstart, rep(0.2, 9))
   expect_equal(dom$ystart - dom$yend, rep(0.2, 9))
   expect_equal(nrow(unique(dom)), 9)
+  
+  dom <- plotly:::get_domains(nplots = 2, nrows = 1, margins = 0.1)
+  expect_equal(nrow(dom), 2)
+  expect_equal(ncol(dom), 4)
+  
+  dom <- plotly:::get_domains(nplots = 1, nrows = 1, margins = 0.1)
+  expect_equal(nrow(dom), 1)
+  expect_equal(ncol(dom), 4)
 })
